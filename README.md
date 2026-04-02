@@ -55,7 +55,7 @@ LocalFlow is currently in its **Month 2: Build Complete** state. You can launch 
 
 ### Installation
 ```bash
-git clone https://github.com/yourusername/localflow.git
+git clone https://github.com/yethikrishna/localflow.git
 cd localflow
 bash scripts/setup.sh
 ```
