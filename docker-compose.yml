@@ -1,0 +1,140 @@
+version: '3.8'
+
+services:
+  # The main LocalFlow platform - Agent Orchestrator & UI
+  localflow-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: localflow/app:latest
+    container_name: localflow-app
+    restart: unless-stopped
+    ports:
+      - "${LOCALFLOW_PORT:-3000}:3000"
+    volumes:
+      - localflow-data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - DATABASE_URL=postgres://${DB_USER:-user}:${DB_PASSWORD:-pass}@db:5432/${DB_NAME:-localflow}
+      - REDIS_URL=redis://redis:6379
+      - DISCOVERY_ENABLED=true
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - localflow-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.localflow.rule=Host(`${TRAEFIK_DOMAIN:-localflow.local}`)"
+      - "traefik.http.services.localflow.loadbalancer.server.port=3000"
+
+  # Persistent state and workflow storage
+  db:
+    image: postgres:15-alpine
+    container_name: localflow-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-pass}
+      - POSTGRES_DB=${DB_NAME:-localflow}
+    volumes:
+      - localflow-db-data:/var/lib/postgresql/data
+    networks:
+      - localflow-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-user} -d ${DB_NAME:-localflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+
+  # Task queueing and background jobs
+  redis:
+    image: redis:7-alpine
+    container_name: localflow-redis
+    restart: unless-stopped
+    networks:
+      - localflow-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Local Ollama instance
+  ollama:
+    image: ollama/ollama:latest
+    container_name: localflow-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - localflow-net
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # Traefik reverse proxy for LAN access
+  traefik:
+    image: traefik:v2.10
+    container_name: localflow-traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "${TRAEFIK_PORT:-80}:80"
+      - "8080:8080" # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - localflow-net
+
+networks:
+  localflow-net:
+    driver: bridge
+    name: localflow-net
+
+volumes:
+  localflow-db-data:
+    name: localflow-db-data
+  localflow-data:
+    name: localflow-data
+  ollama-data:
+    name: ollama-data

@@ -1,0 +1,53 @@
+# LocalFlow - Development Infrastructure Setup
+# This configures the project for local development by mounting the code as a volume.
+
+version: '3.8'
+
+services:
+  # The main LocalFlow platform - Agent Orchestrator & UI
+  localflow-core:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: localflow-core-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://dev_user:dev_pass@db:5432/localflow_dev
+      - REDIS_URL=redis://redis:6379
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    depends_on:
+      - db
+      - redis
+    networks:
+      - localflow-net
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    image: postgres:15-alpine
+    container_name: localflow-db-dev
+    environment:
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=dev_pass
+      - POSTGRES_DB=localflow_dev
+    volumes:
+      - ./dev_postgres_data:/var/lib/postgresql/data
+    networks:
+      - localflow-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: localflow-redis-dev
+    networks:
+      - localflow-net
+
+networks:
+  localflow-net:
+    driver: bridge

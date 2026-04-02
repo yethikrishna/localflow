@@ -1,0 +1,21 @@
+{
+  "name": "@nexus/mux",
+  "version": "0.1.0-dev",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "isomorphic-git": "^1.25.0",
+    "pify": "^6.1.0",
+    "@nexus/llm": "workspace:*",
+    "@nexus/tools": "workspace:*",
+    "@nexus/discovery": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

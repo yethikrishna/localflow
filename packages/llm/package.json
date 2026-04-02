@@ -1,0 +1,19 @@
+{
+  "name": "@nexus/llm",
+  "version": "0.1.0-dev",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "openai": "^4.0.0",
+    "anthropic-sdk": "^0.0.0",
+    "google-generative-ai": "^0.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

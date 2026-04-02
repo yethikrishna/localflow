@@ -1,0 +1,12 @@
+# Development Dockerfile for LocalFlow
+FROM node:20-alpine
+
+RUN npm install -g pnpm turbo
+
+WORKDIR /app
+
+# Files are mounted in docker-compose.dev.yml
+# This image provides the environment
+EXPOSE 3000
+
+CMD ["pnpm", "dev"]

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  localflow-app:
+    image: localflow/app:1.0.0
+    environment:
+      - NODE_ENV=production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.localflow.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.localflow.entrypoints=web"
+      # - "traefik.http.routers.localflow.tls=true"
+      # - "traefik.http.routers.localflow.tls.certresolver=myresolver"
+
+  db:
+    image: postgres:15.5-alpine
+    environment:
+      - NODE_ENV=production
+
+  redis:
+    image: redis:7.2-alpine
+
+  ollama:
+    image: ollama/ollama:0.1.27
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  traefik:
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      # - "--certificatesresolvers.myresolver.acme.email=admin@example.com"
+      # - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    # volumes:
+    #   - "./letsencrypt:/letsencrypt"

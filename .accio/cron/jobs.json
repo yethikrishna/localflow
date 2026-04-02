@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "jobs": [
+    {
+      "id": "cron-1774904689015-ak0xpzow",
+      "name": "Hourly Standup",
+      "description": "Hourly team standup reporting progress to the group chat.",
+      "enabled": true,
+      "deleteAfterRun": false,
+      "createdAtMs": 1774904689015,
+      "updatedAtMs": 1775138986540,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 3600000,
+        "anchorMs": 1774937384505
+      },
+      "payload": {
+        "kind": "agent",
+        "message": "@{MID-07750846U1774904-5E07F5-6708-0410DF} Perform the hourly standup. Report the status of all tasks and the progress of each team member. Mention any blockers or upcoming deadlines.",
+        "agent": "DID-DB9653-765527"
+      },
+      "state": {
+        "nextRunAtMs": 1775142584505,
+        "lastRunAtMs": 1775138984567,
+        "lastStatus": "ok",
+        "lastDurationMs": 22
+      },
+      "target": {
+        "type": "conversation",
+        "conversationId": "CID-24750846U1774904-5E07F5-5026-9AA1A4"
+      },
+      "workspacePath": "C:\\Users\\kkvin\\.accio\\accounts\\7083750846\\agents\\DID-DB9653-765527\\project",
+      "createdBy": {
+        "source": "agent",
+        "actorId": "DID-DB9653-765527"
+      },
+      "sessionTarget": "main"
+    }
+  ]
+}
