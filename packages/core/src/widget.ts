@@ -10,9 +10,40 @@ export abstract class NxWidget {
   public children: NxWidget[] = [];
   public parent: NxWidget | null = null;
   public state: WidgetState = 'idle';
+  public isDirty: boolean = true;
 
   constructor() {
     this.yogaNode = Yoga.Node.create();
+  }
+
+  markDirty() {
+    this.isDirty = true;
+    let p = this.parent;
+    while (p) {
+      p.isDirty = true;
+      p = p.parent;
+    }
+  }
+
+  clearDirty() {
+    this.isDirty = false;
+    for (const child of this.children) {
+      child.clearDirty();
+    }
+  }
+
+  getGlobalBounds(): { x: number, y: number, width: number, height: number } {
+    const layout = this.yogaNode.getComputedLayout();
+    let x = layout.left;
+    let y = layout.top;
+    let p = this.parent;
+    while (p) {
+      const pLayout = p.yogaNode.getComputedLayout();
+      x += pLayout.left;
+      y += pLayout.top;
+      p = p.parent;
+    }
+    return { x, y, width: layout.width, height: layout.height };
   }
 
   // Base paint function

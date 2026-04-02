@@ -8,7 +8,7 @@
       "enabled": true,
       "deleteAfterRun": false,
       "createdAtMs": 1774904689015,
-      "updatedAtMs": 1775138986540,
+      "updatedAtMs": 1775142586543,
       "schedule": {
         "kind": "every",
         "everyMs": 3600000,
@@ -20,10 +20,10 @@
         "agent": "DID-DB9653-765527"
       },
       "state": {
-        "nextRunAtMs": 1775142584505,
-        "lastRunAtMs": 1775138984567,
+        "nextRunAtMs": 1775146184505,
+        "lastRunAtMs": 1775142584577,
         "lastStatus": "ok",
-        "lastDurationMs": 22
+        "lastDurationMs": 18
       },
       "target": {
         "type": "conversation",

@@ -25,9 +25,12 @@ export function normalizeToolOutput(toolName: string, output: any): NexusDataBun
   if (toolName.includes('ollama_chat') || toolName.includes('summarize')) {
     type = 'text';
     content = typeof output === 'string' ? output : (output.content || JSON.stringify(output));
-  } else if (toolName.includes('nocodb_query') || Array.isArray(output)) {
+  } else if (toolName.startsWith('fs_read_file')) {
+    type = 'file';
+    content = output;
+  } else if (toolName.includes('nocodb_query') || toolName.includes('list_files') || toolName.includes('git_list') || toolName.includes('grep') || Array.isArray(output)) {
     type = 'table';
-    content = Array.isArray(output) ? output : (output.content ? JSON.parse(output.content) : output);
+    content = Array.isArray(output) ? output : (output.content ? (typeof output.content === 'string' ? JSON.parse(output.content) : output.content) : output);
   } else if (toolName.includes('appflowy_read')) {
     type = 'text';
     content = typeof output === 'string' ? output : (output.content || JSON.stringify(output));

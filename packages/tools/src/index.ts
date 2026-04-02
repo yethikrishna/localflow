@@ -10,6 +10,10 @@ import {
 import { normalizeToolOutput, createErrorBundle } from './normalization.js';
 import { BrowserUseTool } from './browser-use.js';
 import { STORMTool } from './storm.js';
+import { FilesystemTool } from './filesystem.js';
+import { TerminalTool } from './terminal.js';
+import { GitTool } from './git.js';
+import { SearchTool } from './search.js';
 
 /**
  * LocalFlow MCP Bridge Server
@@ -17,6 +21,10 @@ import { STORMTool } from './storm.js';
  */
 const browserTool = new BrowserUseTool();
 const stormTool = new STORMTool();
+const filesystemTool = new FilesystemTool();
+const terminalTool = new TerminalTool();
+const gitTool = new GitTool();
+const searchTool = new SearchTool();
 
 const server = new Server(
   {
@@ -138,6 +146,106 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["topic"]
         }
+      },
+      {
+        name: "fs_read_file",
+        description: "Read the contents of a file from the local filesystem.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            path: { type: "string", description: "Path to the file relative to the workspace root." }
+          },
+          required: ["path"]
+        }
+      },
+      {
+        name: "fs_write_file",
+        description: "Write content to a file on the local filesystem.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            path: { type: "string" },
+            content: { type: "string" }
+          },
+          required: ["path", "content"]
+        }
+      },
+      {
+        name: "fs_list_files",
+        description: "List files in a directory.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            path: { type: "string", default: "." }
+          }
+        }
+      },
+      {
+        name: "fs_delete_file",
+        description: "Delete a file from the local filesystem.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            path: { type: "string" }
+          },
+          required: ["path"]
+        }
+      },
+      {
+        name: "terminal_execute",
+        description: "Execute a command in the local terminal.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            command: { type: "string" }
+          },
+          required: ["command"]
+        }
+      },
+      {
+        name: "git_list_branches",
+        description: "List all git branches.",
+        inputSchema: { type: "object", properties: {} }
+      },
+      {
+        name: "git_create_branch",
+        description: "Create a new git branch.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: { type: "string" }
+          },
+          required: ["name"]
+        }
+      },
+      {
+        name: "git_list_worktrees",
+        description: "List all git worktrees.",
+        inputSchema: { type: "object", properties: {} }
+      },
+      {
+        name: "search_grep",
+        description: "Search for a pattern in files (grep).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            pattern: { type: "string" },
+            path: { type: "string", default: "." }
+          },
+          required: ["pattern"]
+        }
+      },
+      {
+        name: "search_find",
+        description: "Find files by name pattern.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            pattern: { type: "string", description: "File name pattern (e.g., '*.ts')" },
+            path: { type: "string", default: "." }
+          },
+          required: ["pattern"]
+        }
       }
     ],
   };
@@ -175,6 +283,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case "storm_research":
         result = await handleStormResearch(args as any);
+        break;
+      case "fs_read_file":
+        result = await filesystemTool.readFile((args as any).path);
+        break;
+      case "fs_write_file":
+        await filesystemTool.writeFile((args as any).path, (args as any).content);
+        result = { success: true };
+        break;
+      case "fs_list_files":
+        result = await filesystemTool.listFiles((args as any).path || ".");
+        break;
+      case "fs_delete_file":
+        await filesystemTool.deleteFile((args as any).path);
+        result = { success: true };
+        break;
+      case "terminal_execute":
+        result = await terminalTool.execute((args as any).command);
+        break;
+      case "git_list_branches":
+        result = await gitTool.listBranches();
+        break;
+      case "git_create_branch":
+        result = await gitTool.createBranch((args as any).name);
+        break;
+      case "git_list_worktrees":
+        result = await gitTool.listWorktrees();
+        break;
+      case "search_grep":
+        result = await searchTool.grep((args as any).pattern, (args as any).path);
+        break;
+      case "search_find":
+        result = await searchTool.find((args as any).pattern, (args as any).path);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

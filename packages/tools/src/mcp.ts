@@ -24,6 +24,18 @@ export class NexusMCP {
     if (toolName === 'nocodb_query_data') {
       return { list: [{ id: 1, name: 'Task Alpha' }, { id: 2, name: 'Task Beta' }] };
     }
+    if (toolName.startsWith('fs_')) {
+      return { content: `Simulated filesystem operation: ${toolName}` };
+    }
+    if (toolName === 'terminal_execute') {
+      return { stdout: `Successfully ran: ${args.command}`, stderr: '' };
+    }
+    if (toolName.startsWith('git_')) {
+      return { content: `Simulated git operation: ${toolName}` };
+    }
+    if (toolName.startsWith('search_')) {
+      return { results: [`match.ts:1: // Found ${args.pattern}`] };
+    }
     
     return null;
   }

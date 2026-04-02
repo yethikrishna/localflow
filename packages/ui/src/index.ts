@@ -4,3 +4,6 @@ export * from './demo-node';
 export * from './workflow-node';
 export * from './serialization';
 export * from './palette';
+export * from './agent-panel';
+export * from './activity-heatmap';
+export * from './dashboard';
